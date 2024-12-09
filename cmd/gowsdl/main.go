@@ -119,9 +119,7 @@ func main() {
 
 	pkg := filepath.Join(*dir, *pkg)
 	if *clientStub || *serverStub {
-		if err := os.Mkdir(pkg, 0744); err != nil {
-			log.Fatalln(err)
-		}
+		os.Mkdir(pkg, 0744)
 	}
 
 	if *clientStub {
