@@ -32,6 +32,7 @@ type GoWSDL struct {
 	rawWSDL               []byte
 	pkg                   string
 	ignoreTLS             bool
+	unqualifiedAttrs      bool
 	makePublicFn          func(string) string
 	wsdl                  *WSDL
 	resolvedXSDExternals  map[string]bool
@@ -47,6 +48,10 @@ func (g *GoWSDL) setNS(ns string) string {
 
 // Method setNS returns the currently active XML namespace.
 func (g *GoWSDL) getNS() string {
+	if g.unqualifiedAttrs {
+		return ""
+	}
+
 	return g.currentNamespace
 }
 
@@ -94,7 +99,7 @@ func downloadFile(url string, ignoreTLS bool) ([]byte, error) {
 }
 
 // NewGoWSDL initializes WSDL generator.
-func NewGoWSDL(file, pkg string, ignoreTLS bool, exportAllTypes bool) (*GoWSDL, error) {
+func NewGoWSDL(file, pkg string, ignoreTLS bool, exportAllTypes bool, unqualifiedAttrs bool) (*GoWSDL, error) {
 	file = strings.TrimSpace(file)
 	if file == "" {
 		return nil, errors.New("WSDL file is required to generate Go proxy")
@@ -115,10 +120,11 @@ func NewGoWSDL(file, pkg string, ignoreTLS bool, exportAllTypes bool) (*GoWSDL, 
 	}
 
 	return &GoWSDL{
-		loc:          r,
-		pkg:          pkg,
-		ignoreTLS:    ignoreTLS,
-		makePublicFn: makePublicFn,
+		loc:              r,
+		pkg:              pkg,
+		ignoreTLS:        ignoreTLS,
+		makePublicFn:     makePublicFn,
+		unqualifiedAttrs: unqualifiedAttrs,
 	}, nil
 }
 
@@ -524,9 +530,9 @@ var xsd2GoTypes = map[string]string{
 	"unsignedshort":      "uint16",
 	"unsignedbyte":       "byte",
 	"unsignedlong":       "uint64",
-	"anytype":            "AnyType",
-	"ncname":             "NCName",
-	"anyuri":             "AnyURI",
+	"anytype":            "soap.AnyType",
+	"ncname":             "soap.NCName",
+	"anyuri":             "soap.AnyURI",
 }
 
 func removeNS(xsdType string) string {

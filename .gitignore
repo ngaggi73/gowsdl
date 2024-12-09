@@ -5,3 +5,4 @@ build
 dist
 .idea/
 fixtures/epcis/epcisquery_gen.src
+*.exe

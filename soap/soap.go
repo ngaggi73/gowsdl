@@ -12,6 +12,14 @@ import (
 	"time"
 )
 
+type AnyType struct {
+	InnerXML string `xml:",innerxml"`
+}
+
+type AnyURI string
+
+type NCName string
+
 type SOAPEncoder interface {
 	Encode(v interface{}) error
 	Flush() error
