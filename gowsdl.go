@@ -331,6 +331,7 @@ func (g *GoWSDL) genOperations() ([]byte, error) {
 		"findType":             g.findType,
 		"findSOAPAction":       g.findSOAPAction,
 		"findServiceAddress":   g.findServiceAddress,
+		"responseAttachments":  g.responseAttachments,
 	}
 
 	data := new(bytes.Buffer)
@@ -646,6 +647,25 @@ func (g *GoWSDL) findServiceAddress(name string) string {
 		}
 	}
 	return ""
+}
+
+// Finds parts of the specified response message that may be returned as an attachment
+// Parts whose name ends with the '-attachment' suffix are marked as response attachments
+func (g *GoWSDL) responseAttachments(message string) []*WSDLPart {
+	message = stripns(message)
+	attachmentParts := make([]*WSDLPart, 0)
+	for _, msg := range g.wsdl.Messages {
+		if msg.Name != message {
+			continue
+		}
+
+		for _, part := range msg.Parts {
+			if strings.HasSuffix(part.Name, "-attachment") {
+				attachmentParts = append(attachmentParts, part)
+			}
+		}
+	}
+	return attachmentParts
 }
 
 // TODO(c4milo): Add namespace support instead of stripping it
