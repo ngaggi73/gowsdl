@@ -24,9 +24,9 @@ var opsTmpl = `
 			// {{range .Faults}}
 			//   - {{.Name}} {{.Doc}}{{end}}{{end}}
 			{{if ne .Doc ""}}/* {{.Doc}} */{{end}}
-			{{makePublic .Name | replaceReservedWords}} ({{if ne $requestType ""}}request *{{$requestType}}{{end}}) ({{if ne $responseType ""}}*{{$responseType}}, {{end}}{{if gt $attachments 0}}*[]soap.MIMEMultipartAttachment, {{end}}error)
+			{{makePublic .Name | replaceReservedWords}} ({{if ne $requestType ""}}request *{{$requestType}}{{end}}) ({{if ne $responseType ""}}*{{$responseType}}, {{end}}{{if gt $attachments 0}}[]soap.MIMEMultipartAttachment, {{end}}error)
 			{{/*end*/}}
-			{{makePublic .Name | replaceReservedWords}}Context (ctx context.Context, {{if ne $requestType ""}}request *{{$requestType}}{{end}}) ({{if ne $responseType ""}}*{{$responseType}}, {{end}}{{if gt $attachments 0}}*[]soap.MIMEMultipartAttachment, {{end}}error)
+			{{makePublic .Name | replaceReservedWords}}Context (ctx context.Context, {{if ne $requestType ""}}request *{{$requestType}}{{end}}) ({{if ne $responseType ""}}*{{$responseType}}, {{end}}{{if gt $attachments 0}}[]soap.MIMEMultipartAttachment, {{end}}error)
 			{{/*end*/}}
 		{{end}}
 	}
@@ -49,18 +49,17 @@ var opsTmpl = `
 		{{$attachments := len $responseAttachments}}
 
 		{{if gt $attachments 0}}
-			func (service *{{$privateType}}) {{makePublic .Name | replaceReservedWords}}Context (ctx context.Context, {{if ne $requestType ""}}request *{{$requestType}}{{end}}) ({{if ne $responseType ""}}*{{$responseType}}, {{end}}*[]soap.MIMEMultipartAttachment, error) {
+			func (service *{{$privateType}}) {{makePublic .Name | replaceReservedWords}}Context (ctx context.Context, {{if ne $requestType ""}}request *{{$requestType}}{{end}}) ({{if ne $responseType ""}}*{{$responseType}}, {{end}}[]soap.MIMEMultipartAttachment, error) {
 				{{if ne $responseType ""}}response := new({{$responseType}}){{end}}
-				attachments := make([]soap.MIMEMultipartAttachment, 0)
-				err := service.client.CallContextWithAttachmentsAndFaultDetail(ctx, "{{if ne $soapAction ""}}{{$soapAction}}{{else}}''{{end}}", {{if ne $requestType ""}}request{{else}}nil{{end}}, {{if ne $responseType ""}}response{{else}}struct{}{}{{end}}, nil, &attachments)
+				attachments, err := service.client.CallContextWithAttachmentsAndFaultDetail(ctx, "{{if ne $soapAction ""}}{{$soapAction}}{{else}}''{{end}}", {{if ne $requestType ""}}request{{else}}nil{{end}}, {{if ne $responseType ""}}response{{else}}struct{}{}{{end}}, nil)
 				if err != nil {
 					return {{if ne $responseType ""}}nil, {{end}}nil, err
 				}
 
-				return {{if ne $responseType ""}}response, {{end}}&attachments, nil
+				return {{if ne $responseType ""}}response, {{end}}attachments, nil
 			}
 
-			func (service *{{$privateType}}) {{makePublic .Name | replaceReservedWords}} ({{if ne $requestType ""}}request *{{$requestType}}{{end}}) ({{if ne $responseType ""}}*{{$responseType}}, {{end}}*[]soap.MIMEMultipartAttachment, error) {
+			func (service *{{$privateType}}) {{makePublic .Name | replaceReservedWords}} ({{if ne $requestType ""}}request *{{$requestType}}{{end}}) ({{if ne $responseType ""}}*{{$responseType}}, {{end}}[]soap.MIMEMultipartAttachment, error) {
 				return service.{{makePublic .Name | replaceReservedWords}}Context(
 					context.Background(),
 					{{if ne $requestType ""}}request,{{end}}

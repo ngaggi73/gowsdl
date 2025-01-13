@@ -163,11 +163,10 @@ func TestClient_Attachments_WithAttachmentResponse(t *testing.T) {
 		ContentID: "First_Attachment",
 	}
 	reply := new(AttachmentRequest)
-	retAttachments := make([]MIMEMultipartAttachment, 0)
+	retAttachments, err := client.CallContextWithAttachmentsAndFaultDetail(context.TODO(), "''", req, reply, nil)
 
 	// WHEN
-	if err := client.CallContextWithAttachmentsAndFaultDetail(context.TODO(), "''", req,
-		reply, nil, &retAttachments); err != nil {
+	if err != nil {
 		t.Fatalf("couln't call service: %v", err)
 	}
 
